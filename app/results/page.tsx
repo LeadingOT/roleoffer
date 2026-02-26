@@ -11,9 +11,15 @@ interface BenchmarkData {
   base_salary_p25: number;
   base_salary_p50: number;
   base_salary_p75: number;
+  base_salary_p90: number;
   equity_pct_p25: number;
   equity_pct_p50: number;
   equity_pct_p75: number;
+  equity_pct_p90: number;
+  bonus_p25: number;
+  bonus_p50: number;
+  bonus_p75: number;
+  bonus_p90: number;
   data_sources?: string[];
   sample_size?: number;
 }
@@ -44,10 +50,7 @@ function ResultsContent() {
         body: JSON.stringify({ role, location, stage })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch benchmark data');
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch benchmark data');
       const data = await response.json();
       setBenchmarkData(data);
     } catch (err) {
@@ -74,9 +77,30 @@ function ResultsContent() {
   }
 
   const chartData = [
-    { percentile: 'P25', salary: benchmarkData.base_salary_p25, equity: benchmarkData.equity_pct_p25 },
-    { percentile: 'P50', salary: benchmarkData.base_salary_p50, equity: benchmarkData.equity_pct_p50 },
-    { percentile: 'P75', salary: benchmarkData.base_salary_p75, equity: benchmarkData.equity_pct_p75 },
+    { 
+      percentile: 'P25', 
+      salary: benchmarkData.base_salary_p25,
+      totalCash: benchmarkData.base_salary_p25 + benchmarkData.bonus_p25,
+      equity: benchmarkData.equity_pct_p25
+    },
+    { 
+      percentile: 'P50', 
+      salary: benchmarkData.base_salary_p50,
+      totalCash: benchmarkData.base_salary_p50 + benchmarkData.bonus_p50,
+      equity: benchmarkData.equity_pct_p50
+    },
+    { 
+      percentile: 'P75', 
+      salary: benchmarkData.base_salary_p75,
+      totalCash: benchmarkData.base_salary_p75 + benchmarkData.bonus_p75,
+      equity: benchmarkData.equity_pct_p75
+    },
+    { 
+      percentile: 'P90', 
+      salary: benchmarkData.base_salary_p90,
+      totalCash: benchmarkData.base_salary_p90 + benchmarkData.bonus_p90,
+      equity: benchmarkData.equity_pct_p90
+    },
   ];
 
   const formatCurrency = (value: number) => {
@@ -89,7 +113,7 @@ function ResultsContent() {
   };
 
   const formatPercent = (value: number) => {
-    return `${(value * 100).toFixed(2)}%`;
+    return `${(value * 100).toFixed(3)}%`;
   };
 
   return (
@@ -110,43 +134,60 @@ function ResultsContent() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="grid md:grid-cols-4 gap-4 mb-8">
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">25th Percentile</CardTitle>
-                <CardDescription className="text-3xl font-bold text-foreground">
+                <CardDescription className="text-2xl font-bold text-foreground">
                   {formatCurrency(benchmarkData.base_salary_p25)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Base Salary</p>
-                <p className="text-sm font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p25)}</p>
+                <p className="text-xs text-muted-foreground">Salary</p>
+                <p className="text-sm font-medium">+{formatCurrency(benchmarkData.bonus_p25)} bonus</p>
+                <p className="text-xs font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p25)}</p>
               </CardContent>
             </Card>
 
             <Card className="border-primary">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">50th Percentile (Median)</CardTitle>
-                <CardDescription className="text-3xl font-bold text-foreground">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">50th (Median)</CardTitle>
+                <CardDescription className="text-2xl font-bold text-foreground">
                   {formatCurrency(benchmarkData.base_salary_p50)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Base Salary (Market Median)</p>
-                <p className="text-sm font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p50)}</p>
+                <p className="text-xs text-muted-foreground">Salary</p>
+                <p className="text-sm font-medium">+{formatCurrency(benchmarkData.bonus_p50)} bonus</p>
+                <p className="text-xs font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p50)}</p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">75th Percentile</CardTitle>
-                <CardDescription className="text-3xl font-bold text-foreground">
+                <CardDescription className="text-2xl font-bold text-foreground">
                   {formatCurrency(benchmarkData.base_salary_p75)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Base Salary</p>
-                <p className="text-sm font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p75)}</p>
+                <p className="text-xs text-muted-foreground">Salary</p>
+                <p className="text-sm font-medium">+{formatCurrency(benchmarkData.bonus_p75)} bonus</p>
+                <p className="text-xs font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p75)}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">90th Percentile</CardTitle>
+                <CardDescription className="text-2xl font-bold text-foreground">
+                  {formatCurrency(benchmarkData.base_salary_p90)}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-muted-foreground">Salary</p>
+                <p className="text-sm font-medium">+{formatCurrency(benchmarkData.bonus_p90)} bonus</p>
+                <p className="text-xs font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p90)}</p>
               </CardContent>
             </Card>
           </div>
@@ -154,8 +195,8 @@ function ResultsContent() {
           {/* Chart */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Base Salary Distribution</CardTitle>
-              <CardDescription>Annual base salary by percentile</CardDescription>
+              <CardTitle>Compensation Distribution</CardTitle>
+              <CardDescription>Base Salary vs Total Cash (Salary + Bonus) by percentile</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -166,6 +207,7 @@ function ResultsContent() {
                   <Tooltip formatter={(value) => formatCurrency(value as number)} />
                   <Legend />
                   <Bar dataKey="salary" fill="hsl(var(--primary))" name="Base Salary" />
+                  <Bar dataKey="totalCash" fill="hsl(var(--chart-2))" name="Total Cash" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -175,43 +217,54 @@ function ResultsContent() {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Detailed Breakdown</CardTitle>
-              <CardDescription>Compensation components by percentile</CardDescription>
+              <CardDescription>All compensation components by percentile</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-medium">Percentile</th>
-                      <th className="text-left py-3 px-4 font-medium">Base Salary</th>
-                      <th className="text-left py-3 px-4 font-medium">Equity %</th>
-                      <th className="text-left py-3 px-4 font-medium">Est. Equity Value (4yr)</th>
+                      <th className="text-left py-3 px-4 font-medium">Level</th>
+                      <th className="text-left py-3 px-4 font-medium">Salary</th>
+                      <th className="text-left py-3 px-4 font-medium">Bonus</th>
+                      <th className="text-left py-3 px-4 font-medium">Total Cash</th>
+                      <th className="text-left py-3 px-4 font-medium">Equity (4yr)</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b">
-                      <td className="py-3 px-4">P25</td>
+                      <td className="py-3 px-4 font-medium">25th</td>
                       <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p25)}</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.bonus_p25)}</td>
+                      <td className="py-3 px-4 font-medium">{formatCurrency(benchmarkData.base_salary_p25 + benchmarkData.bonus_p25)}</td>
                       <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p25)}</td>
-                      <td className="py-3 px-4 text-muted-foreground">Varies by valuation</td>
+                    </tr>
+                    <tr className="border-b bg-muted/50">
+                      <td className="py-3 px-4 font-medium">50th</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p50)}</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.bonus_p50)}</td>
+                      <td className="py-3 px-4 font-medium">{formatCurrency(benchmarkData.base_salary_p50 + benchmarkData.bonus_p50)}</td>
+                      <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p50)}</td>
                     </tr>
                     <tr className="border-b">
-                      <td className="py-3 px-4">P50</td>
-                      <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p50)}</td>
-                      <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p50)}</td>
-                      <td className="py-3 px-4 text-muted-foreground">Varies by valuation</td>
+                      <td className="py-3 px-4 font-medium">75th</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p75)}</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.bonus_p75)}</td>
+                      <td className="py-3 px-4 font-medium">{formatCurrency(benchmarkData.base_salary_p75 + benchmarkData.bonus_p75)}</td>
+                      <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p75)}</td>
                     </tr>
                     <tr>
-                      <td className="py-3 px-4">P75</td>
-                      <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p75)}</td>
-                      <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p75)}</td>
-                      <td className="py-3 px-4 text-muted-foreground">Varies by valuation</td>
+                      <td className="py-3 px-4 font-medium">90th</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p90)}</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.bonus_p90)}</td>
+                      <td className="py-3 px-4 font-medium">{formatCurrency(benchmarkData.base_salary_p90 + benchmarkData.bonus_p90)}</td>
+                      <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p90)}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Note: Equity percentages represent ownership stake. Actual dollar value depends on company valuation.
+                Note: Equity percentages represent ownership stake. Actual dollar value depends on company valuation. Bonus estimates based on typical target bonus percentages.
               </p>
             </CardContent>
           </Card>
