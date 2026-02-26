@@ -26,6 +26,12 @@ const LEVELS = [
   'M3 (Director)',
 ];
 
+const PRICING = {
+  basic: 49,
+  premium: 79,
+  bulk: 99
+};
+
 export default function BenchmarkPage() {
   const router = useRouter();
   const [options, setOptions] = useState<Options>({ roles: [], locations: [], stages: [] });
@@ -37,6 +43,7 @@ export default function BenchmarkPage() {
     stage: '',
     email: '',
   });
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | 'bulk'>('basic');
 
   useEffect(() => {
     fetchOptions();
@@ -49,7 +56,6 @@ export default function BenchmarkPage() {
       setOptions(data);
     } catch (error) {
       console.error('Failed to fetch options:', error);
-      // Use fallback
       setOptions({
         roles: ['Software Engineer', 'Senior Software Engineer', 'Product Manager'],
         locations: ['San Francisco', 'New York', 'Seattle'],
@@ -60,10 +66,10 @@ export default function BenchmarkPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In production, this would validate and process payment
-    // For MVP, we'll just show the results
+    
+    // For MVP: skip payment, go directly to results
     const params = new URLSearchParams({
       role: formData.role,
       level: formData.level,
@@ -90,14 +96,68 @@ export default function BenchmarkPage() {
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-4">Get Your Compensation Benchmark</h1>
             <p className="text-lg text-muted-foreground">
-              Enter your details to receive a comprehensive compensation report with P25/P50/P75 percentiles
+              Comprehensive comp data with P25/P50/P75/P90 percentiles, Total Cash, and Equity breakdown
             </p>
+          </div>
+
+          {/* Pricing Selection */}
+          <div className="grid md:grid-cols-3 gap-4 mb-8">
+            <Card 
+              className={`cursor-pointer transition-all ${selectedPlan === 'basic' ? 'border-primary shadow-lg' : ''}`}
+              onClick={() => setSelectedPlan('basic')}
+            >
+              <CardHeader>
+                <CardTitle>Basic</CardTitle>
+                <CardDescription className="text-2xl font-bold">${PRICING.basic}</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm">
+                <ul className="space-y-1">
+                  <li>✓ Benchmark report</li>
+                  <li>✓ Offer letter PDF</li>
+                  <li>✓ All percentiles</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className={`cursor-pointer transition-all ${selectedPlan === 'premium' ? 'border-primary shadow-lg' : ''}`}
+              onClick={() => setSelectedPlan('premium')}
+            >
+              <CardHeader>
+                <CardTitle>Premium</CardTitle>
+                <CardDescription className="text-2xl font-bold">${PRICING.premium}</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm">
+                <ul className="space-y-1">
+                  <li>✓ Everything in Basic</li>
+                  <li>✓ Equity scenarios</li>
+                  <li>✓ Negotiation tips</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className={`cursor-pointer transition-all ${selectedPlan === 'bulk' ? 'border-primary shadow-lg' : ''}`}
+              onClick={() => setSelectedPlan('bulk')}
+            >
+              <CardHeader>
+                <CardTitle>Bulk (3-pack)</CardTitle>
+                <CardDescription className="text-2xl font-bold">${PRICING.bulk}</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm">
+                <ul className="space-y-1">
+                  <li>✓ 3 benchmark reports</li>
+                  <li>✓ Premium features</li>
+                  <li>✓ 30-day access</li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
 
           <Card>
             <CardHeader>
               <CardTitle>Benchmark Details</CardTitle>
-              <CardDescription>Tell us about the role you're hiring for or evaluating</CardDescription>
+              <CardDescription>Tell us about the role you're evaluating</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -182,10 +242,10 @@ export default function BenchmarkPage() {
 
                 <div className="pt-4">
                   <Button type="submit" size="lg" className="w-full" disabled={!isFormValid}>
-                    Get Benchmark Report - $49
+                    Get Benchmark Report - ${PRICING[selectedPlan]}
                   </Button>
                   <p className="text-xs text-center text-muted-foreground mt-2">
-                    Payment processing available soon. For now, view sample report.
+                    MVP Preview Mode: Payment processing coming soon. View sample report now.
                   </p>
                 </div>
               </form>
