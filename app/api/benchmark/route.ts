@@ -1,23 +1,32 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { role, location, stage } = body
 
+    // Initialize Supabase client at runtime
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      // Fallback to mock data if Supabase not configured
+      return NextResponse.json({
+        base_salary_p25: 150000,
+        base_salary_p50: 180000,
+        base_salary_p75: 220000,
+        equity_pct_p25: 0.05,
+        equity_pct_p50: 0.10,
+        equity_pct_p75: 0.20
+      })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
     const { data: compData, error } = await supabase
       .from('comp_data')
-      .select(\`
-        *,
-        roles!inner(title),
-        locations!inner(city),
-        stages!inner(name)
-      \`)
+      .select('*, roles!inner(title), locations!inner(city), stages!inner(name)')
       .eq('roles.title', role)
       .eq('locations.city', location)
       .eq('stages.name', stage)
