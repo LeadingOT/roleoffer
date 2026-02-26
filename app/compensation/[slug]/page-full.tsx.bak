@@ -2,16 +2,24 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { PSEO_SLUGS } from '@/lib/pseo-slugs';
 
+// Generate static params for top pages
 export async function generateStaticParams() {
-  return PSEO_SLUGS.map((slug) => ({ slug }));
+  return PSEO_SLUGS.map((slug) => ({
+    slug,
+  }));
 }
 
+// Force static generation
 export const dynamic = 'force-static';
+export const dynamicParams = false;
 
+// Parse slug format: "software-engineer-senior-series-a-san-francisco"
+// Format: {role}-{level}-{stage}-{location}
 function parseSlug(slug: string) {
   const parts = slug.split('-');
-  const levels = ['junior', 'mid', 'senior', 'staff', 'principal', 'lead'];
   
+  // Find level (junior, mid, senior, staff, principal, lead)
+  const levels = ['junior', 'mid', 'senior', 'staff', 'principal', 'lead'];
   let levelIndex = -1;
   for (let i = 0; i < parts.length; i++) {
     if (levels.includes(parts[i])) {
@@ -21,10 +29,12 @@ function parseSlug(slug: string) {
   }
   
   if (levelIndex === -1) return null;
+  
   const level = parts[levelIndex];
   
-  const stages = ['seed', 'series', 'growth', 'late'];
+  // Find stage (seed, series-a, series-b, series-c)
   let stageIndex = -1;
+  const stages = ['seed', 'series', 'growth', 'late'];
   for (let i = levelIndex + 1; i < parts.length; i++) {
     if (stages.includes(parts[i])) {
       stageIndex = i;
@@ -34,6 +44,7 @@ function parseSlug(slug: string) {
   
   if (stageIndex === -1) return null;
   
+  // Stage might be "series-a" or "series-b" etc
   let stage = parts[stageIndex];
   let stageEnd = stageIndex + 1;
   if (parts[stageIndex] === 'series' && stageIndex + 1 < parts.length) {
@@ -41,36 +52,48 @@ function parseSlug(slug: string) {
     stageEnd = stageIndex + 2;
   }
   
+  // Role is everything before level
   const role = parts.slice(0, levelIndex).join('-');
+  
+  // Location is everything after stage
   const location = parts.slice(stageEnd).join('-');
   
   return { role, level, stage, location };
 }
 
-function normalize(str: string): string {
+// Normalize for display
+function normalize(str: string | undefined): string {
+  if (!str || typeof str !== 'string') return '';
   return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const parsed = parseSlug(slug);
-  
-  if (!parsed) return { title: 'Not Found' };
+  if (!parsed) {
+    return { title: 'Not Found' };
+  }
   
   const { role, level, stage, location } = parsed;
   const title = `${normalize(level)} ${normalize(role)} Compensation at ${normalize(stage)} Startups in ${normalize(location)}`;
-  const description = `Startup compensation benchmarks for ${normalize(level)} ${normalize(role)} at ${normalize(stage)} companies in ${normalize(location)}.`;
+  const description = `Startup compensation benchmarks for ${normalize(level)} ${normalize(role)} at ${normalize(stage)} companies in ${normalize(location)}. Get P25/P50/P75 salary data, equity ranges, and offer letter templates.`;
   
-  return { title, description };
+  return {
+    title,
+    description,
+  };
 }
 
 export default async function CompensationPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const parsed = parseSlug(slug);
   
-  if (!parsed) return <div>Not found</div>;
+  if (!parsed) {
+    return <div>Not found</div>;
+  }
   
   const { role, level, stage, location } = parsed;
+  
   const roleTitle = normalize(role);
   const levelTitle = normalize(level);
   const stageTitle = normalize(stage);
@@ -89,7 +112,7 @@ export default async function CompensationPage({ params }: { params: Promise<{ s
           
           <div className="my-8 p-6 bg-muted/50 rounded-lg">
             <p className="text-muted-foreground">
-              We&apos;re collecting data for this specific combination. Get a custom benchmark report below.
+              We're collecting data for this specific combination. Get a custom benchmark report with our calculator below.
             </p>
           </div>
           
@@ -115,47 +138,36 @@ export default async function CompensationPage({ params }: { params: Promise<{ s
             </ul>
             
             <div className="flex gap-4">
-              <Link 
-                href="/benchmark" 
-                className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
+              <Link href="/benchmark" className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90">
                 Get Report - $49
               </Link>
-              <Link 
-                href="/calculator" 
-                className="inline-flex items-center justify-center rounded-md border px-6 py-3 text-sm font-medium hover:bg-accent"
-              >
+              <Link href="/calculator" className="inline-flex items-center justify-center rounded-md border px-6 py-3 text-sm font-medium hover:bg-accent">
                 Try Free Calculator
               </Link>
             </div>
           </div>
           
-          <div className="my-12">
+          <div className="my-12 prose max-w-none">
             <h2 className="text-2xl font-bold mb-4">About {roleTitle} Compensation</h2>
-            <div className="prose max-w-none">
-              <p>
-                {levelTitle} {roleTitle} roles at {stageTitle} stage startups in {locationTitle} typically include 
-                a combination of base salary, equity compensation, and performance bonuses.
-              </p>
-              
-              <h3 className="text-xl font-semibold mt-6 mb-3">Factors Affecting Compensation</h3>
-              <ul>
-                <li><strong>Company Stage:</strong> {stageTitle} companies typically have different cash vs. equity mixes</li>
-                <li><strong>Location:</strong> {locationTitle} market rates vary based on local cost of living</li>
-                <li><strong>Experience Level:</strong> {levelTitle} roles command different compensation ranges</li>
-              </ul>
-            </div>
+            <p>
+              {levelTitle} {roleTitle} roles at {stageTitle} stage startups in {locationTitle} typically include 
+              a combination of base salary, equity compensation, and performance bonuses.
+            </p>
+            
+            <h3 className="text-xl font-semibold mt-6 mb-3">Factors Affecting Compensation</h3>
+            <ul>
+              <li><strong>Company Stage:</strong> {stageTitle} companies typically have different cash vs. equity mixes</li>
+              <li><strong>Location:</strong> {locationTitle} market rates vary based on local cost of living and competition</li>
+              <li><strong>Experience Level:</strong> {levelTitle} roles command different compensation ranges</li>
+            </ul>
           </div>
           
           <div className="my-12 p-8 bg-primary/5 rounded-lg text-center">
             <h2 className="text-2xl font-bold mb-4">Ready to benchmark your offer?</h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Get precise compensation data in seconds
+              Get precise compensation data and negotiation guidance in seconds
             </p>
-            <Link 
-              href="/benchmark" 
-              className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
+            <Link href="/benchmark" className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90">
               Get Your Report
             </Link>
           </div>
