@@ -6,26 +6,58 @@ import Link from 'next/link';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getCompData } from '@/lib/mockData';
-import { CompData } from '@/lib/types';
+
+interface BenchmarkData {
+  base_salary_p25: number;
+  base_salary_p50: number;
+  base_salary_p75: number;
+  equity_pct_p25: number;
+  equity_pct_p50: number;
+  equity_pct_p75: number;
+  data_sources?: string[];
+  sample_size?: number;
+}
 
 function ResultsContent() {
   const searchParams = useSearchParams();
-  const [compData, setCompData] = useState<CompData | null>(null);
+  const [benchmarkData, setBenchmarkData] = useState<BenchmarkData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const role = searchParams.get('role');
+  const level = searchParams.get('level');
+  const location = searchParams.get('location');
+  const stage = searchParams.get('stage');
 
   useEffect(() => {
-    const role = searchParams.get('role');
-    const level = searchParams.get('level');
-    const location = searchParams.get('location');
-    const stage = searchParams.get('stage');
-
-    if (role && level && location && stage) {
-      const data = getCompData(role, level, location, stage);
-      setCompData(data);
+    if (role && location && stage) {
+      fetchBenchmarkData();
     }
-  }, [searchParams]);
+  }, [role, location, stage]);
 
-  if (!compData) {
+  const fetchBenchmarkData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/benchmark', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, location, stage })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch benchmark data');
+      }
+
+      const data = await response.json();
+      setBenchmarkData(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg text-muted-foreground">Loading benchmark data...</p>
@@ -33,10 +65,18 @@ function ResultsContent() {
     );
   }
 
+  if (error || !benchmarkData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-destructive">Error: {error || 'No data available'}</p>
+      </div>
+    );
+  }
+
   const chartData = [
-    { percentile: 'P25', value: compData.p25, label: '25th Percentile' },
-    { percentile: 'P50', value: compData.p50, label: '50th Percentile (Median)' },
-    { percentile: 'P75', value: compData.p75, label: '75th Percentile' },
+    { percentile: 'P25', salary: benchmarkData.base_salary_p25, equity: benchmarkData.equity_pct_p25 },
+    { percentile: 'P50', salary: benchmarkData.base_salary_p50, equity: benchmarkData.equity_pct_p50 },
+    { percentile: 'P75', salary: benchmarkData.base_salary_p75, equity: benchmarkData.equity_pct_p75 },
   ];
 
   const formatCurrency = (value: number) => {
@@ -48,6 +88,10 @@ function ResultsContent() {
     }).format(value);
   };
 
+  const formatPercent = (value: number) => {
+    return `${(value * 100).toFixed(2)}%`;
+  };
+
   return (
     <div className="min-h-screen bg-muted/50">
       <div className="container mx-auto px-4 py-12">
@@ -56,8 +100,13 @@ function ResultsContent() {
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-4">Compensation Benchmark Report</h1>
             <p className="text-lg text-muted-foreground">
-              {compData.role} • {compData.level} • {compData.location} • {compData.stage}
+              {role} • {level || 'All Levels'} • {location} • {stage}
             </p>
+            {benchmarkData.data_sources && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Data sources: {benchmarkData.data_sources.join(', ')} • Sample size: {benchmarkData.sample_size || 'N/A'}
+              </p>
+            )}
           </div>
 
           {/* Summary Cards */}
@@ -66,11 +115,12 @@ function ResultsContent() {
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-muted-foreground">25th Percentile</CardTitle>
                 <CardDescription className="text-3xl font-bold text-foreground">
-                  {formatCurrency(compData.p25)}
+                  {formatCurrency(benchmarkData.base_salary_p25)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Entry-level competitive range</p>
+                <p className="text-sm text-muted-foreground">Base Salary</p>
+                <p className="text-sm font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p25)}</p>
               </CardContent>
             </Card>
 
@@ -78,11 +128,12 @@ function ResultsContent() {
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-muted-foreground">50th Percentile (Median)</CardTitle>
                 <CardDescription className="text-3xl font-bold text-foreground">
-                  {formatCurrency(compData.p50)}
+                  {formatCurrency(benchmarkData.base_salary_p50)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Market median compensation</p>
+                <p className="text-sm text-muted-foreground">Base Salary (Market Median)</p>
+                <p className="text-sm font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p50)}</p>
               </CardContent>
             </Card>
 
@@ -90,11 +141,12 @@ function ResultsContent() {
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-muted-foreground">75th Percentile</CardTitle>
                 <CardDescription className="text-3xl font-bold text-foreground">
-                  {formatCurrency(compData.p75)}
+                  {formatCurrency(benchmarkData.base_salary_p75)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">Top-tier competitive range</p>
+                <p className="text-sm text-muted-foreground">Base Salary</p>
+                <p className="text-sm font-medium mt-1">Equity: {formatPercent(benchmarkData.equity_pct_p75)}</p>
               </CardContent>
             </Card>
           </div>
@@ -102,8 +154,8 @@ function ResultsContent() {
           {/* Chart */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Compensation Distribution</CardTitle>
-              <CardDescription>Total compensation by percentile</CardDescription>
+              <CardTitle>Base Salary Distribution</CardTitle>
+              <CardDescription>Annual base salary by percentile</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -113,7 +165,7 @@ function ResultsContent() {
                   <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                   <Tooltip formatter={(value) => formatCurrency(value as number)} />
                   <Legend />
-                  <Bar dataKey="value" fill="hsl(var(--primary))" name="Total Compensation" />
+                  <Bar dataKey="salary" fill="hsl(var(--primary))" name="Base Salary" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -132,36 +184,35 @@ function ResultsContent() {
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 font-medium">Percentile</th>
                       <th className="text-left py-3 px-4 font-medium">Base Salary</th>
-                      <th className="text-left py-3 px-4 font-medium">Equity (4yr)</th>
-                      <th className="text-left py-3 px-4 font-medium">Bonus</th>
-                      <th className="text-left py-3 px-4 font-medium">Total Comp</th>
+                      <th className="text-left py-3 px-4 font-medium">Equity %</th>
+                      <th className="text-left py-3 px-4 font-medium">Est. Equity Value (4yr)</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b">
                       <td className="py-3 px-4">P25</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p25 * 0.7)}</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p25 * 0.2)}</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p25 * 0.1)}</td>
-                      <td className="py-3 px-4 font-medium">{formatCurrency(compData.p25)}</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p25)}</td>
+                      <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p25)}</td>
+                      <td className="py-3 px-4 text-muted-foreground">Varies by valuation</td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-3 px-4">P50</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p50 * 0.7)}</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p50 * 0.2)}</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p50 * 0.1)}</td>
-                      <td className="py-3 px-4 font-medium">{formatCurrency(compData.p50)}</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p50)}</td>
+                      <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p50)}</td>
+                      <td className="py-3 px-4 text-muted-foreground">Varies by valuation</td>
                     </tr>
                     <tr>
                       <td className="py-3 px-4">P75</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p75 * 0.7)}</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p75 * 0.2)}</td>
-                      <td className="py-3 px-4">{formatCurrency(compData.p75 * 0.1)}</td>
-                      <td className="py-3 px-4 font-medium">{formatCurrency(compData.p75)}</td>
+                      <td className="py-3 px-4">{formatCurrency(benchmarkData.base_salary_p75)}</td>
+                      <td className="py-3 px-4">{formatPercent(benchmarkData.equity_pct_p75)}</td>
+                      <td className="py-3 px-4 text-muted-foreground">Varies by valuation</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                Note: Equity percentages represent ownership stake. Actual dollar value depends on company valuation.
+              </p>
             </CardContent>
           </Card>
 
