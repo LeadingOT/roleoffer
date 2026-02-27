@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'RoleOffer - Startup Compensation Benchmarks',
   description: 'Get real-time startup compensation data. Compare offers, benchmark salaries, and negotiate with confidence.',
   keywords: 'startup compensation, salary benchmarks, offer negotiation, equity calculator, startup salaries',
+  verification: {
+    google: 'g7skDGzGBxCiXQyRz-5Syib9RUqTDDhbzeH5GQuw3HQ',
+  },
 };
 
 export default function RootLayout({
