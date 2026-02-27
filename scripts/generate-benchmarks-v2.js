@@ -3,11 +3,11 @@
 
 const fs = require('fs');
 
-// Stage multipliers - RECALIBRATED
+// Stage multipliers - RECALIBRATED V2.1
 const STAGE_MULTIPLIERS = {
   Early: {
     base: 0.92,      // Slightly less than Growth
-    equity: 2.5,     // 2.5x equity (early risk premium)
+    equity: 1.8,     // 1.8x equity (was 2.5x, reduced for $1M-$10M accuracy)
     totalCash: 0.95
   },
   Growth: {
@@ -61,28 +61,28 @@ const BASE_COMP = {
     Staff: { base: 192, totalCash: 225, equity: 0.00120 }
   },
   'Marketing': {
-    Junior: { base: 88, totalCash: 101, equity: 0.00025 },
-    Mid: { base: 110, totalCash: 128, equity: 0.00045 },
-    Senior: { base: 135, totalCash: 160, equity: 0.00060 },
-    Staff: { base: 170, totalCash: 205, equity: 0.00095 }
+    Junior: { base: 75, totalCash: 88, equity: 0.00025 },    // Reduced -15%
+    Mid: { base: 95, totalCash: 112, equity: 0.00045 },      // Was 110, now matches Carta $95K
+    Senior: { base: 120, totalCash: 142, equity: 0.00060 },  // Was 135
+    Staff: { base: 150, totalCash: 180, equity: 0.00095 }    // Was 170
   },
   'Sales': {
-    Junior: { base: 75, totalCash: 115, equity: 0.00025 },   // High OTE
-    Mid: { base: 95, totalCash: 155, equity: 0.00045 },
-    Senior: { base: 120, totalCash: 205, equity: 0.00060 },
-    Staff: { base: 150, totalCash: 270, equity: 0.00095 }
+    Junior: { base: 60, totalCash: 115, equity: 0.00025 },   // Base -20% (was 75), keep OTE
+    Mid: { base: 75, totalCash: 155, equity: 0.00045 },      // Was 95, now closer to Carta $73K
+    Senior: { base: 100, totalCash: 205, equity: 0.00060 },  // Was 120, Carta shows $122K
+    Staff: { base: 130, totalCash: 270, equity: 0.00095 }    // Was 150
   },
   'Customer Success': {
-    Junior: { base: 78, totalCash: 90, equity: 0.00025 },
-    Mid: { base: 95, totalCash: 112, equity: 0.00045 },
-    Senior: { base: 118, totalCash: 140, equity: 0.00060 },
-    Staff: { base: 145, totalCash: 175, equity: 0.00095 }
+    Junior: { base: 70, totalCash: 82, equity: 0.00025 },    // -10%
+    Mid: { base: 86, totalCash: 102, equity: 0.00045 },      // Was 95, -10%
+    Senior: { base: 106, totalCash: 128, equity: 0.00060 },  // Was 118, -10%
+    Staff: { base: 130, totalCash: 160, equity: 0.00095 }    // Was 145, -10%
   },
   'Operations': {
-    Junior: { base: 78, totalCash: 90, equity: 0.00025 },
-    Mid: { base: 102, totalCash: 120, equity: 0.00045 },
-    Senior: { base: 130, totalCash: 155, equity: 0.00060 },
-    Staff: { base: 160, totalCash: 195, equity: 0.00095 }
+    Junior: { base: 70, totalCash: 82, equity: 0.00025 },    // -10%
+    Mid: { base: 92, totalCash: 110, equity: 0.00045 },      // Was 102, -10%
+    Senior: { base: 117, totalCash: 142, equity: 0.00060 },  // Was 130, -10%
+    Staff: { base: 144, totalCash: 178, equity: 0.00095 }    // Was 160, -10%
   },
   'People/HR': {
     Junior: { base: 78, totalCash: 90, equity: 0.00025 },
