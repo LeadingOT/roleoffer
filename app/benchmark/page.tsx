@@ -1,267 +1,232 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface Options {
-  roles: string[];
-  locations: string[];
-  stages: string[];
-}
+// Wizard steps
+type Step = 'role' | 'level' | 'stage' | 'size' | 'location' | 'results';
 
-const LEVELS = [
-  'IC1 (Junior)',
-  'IC2',
-  'IC3 (Mid-level)',
-  'IC4 (Senior)',
-  'IC5 (Staff)',
-  'IC6 (Principal)',
-  'M1 (Manager)',
-  'M2 (Senior Manager)',
-  'M3 (Director)',
+const ROLES = [
+  { id: 'Software Engineer', label: '👨‍💻 Software Engineer', desc: 'Backend, Frontend, Full-stack' },
+  { id: 'Engineering Manager', label: '👔 Engineering Manager', desc: 'EM, Director, VP Engineering' },
+  { id: 'Product Manager', label: '📊 Product Manager', desc: 'PM, Senior PM, Product Lead' },
+  { id: 'Designer', label: '🎨 Designer', desc: 'Product Designer, UX/UI' },
+  { id: 'Data Scientist', label: '📈 Data Scientist', desc: 'ML Engineer, Data Analyst' },
+  { id: 'Marketing', label: '📢 Marketing', desc: 'Growth, Content, Brand' },
+  { id: 'Sales', label: '💼 Sales', desc: 'AE, SDR, Enterprise' },
 ];
 
-const PRICING = {
-  basic: 49,
-  premium: 79,
-  bulk: 99
-};
+const LEVELS = [
+  { id: 'Junior', label: '🌱 Junior', desc: '0-2 years experience' },
+  { id: 'Mid', label: '📚 Mid-Level', desc: '3-5 years experience' },
+  { id: 'Senior', label: '🎯 Senior', desc: '6-10 years experience' },
+  { id: 'Staff', label: '⭐ Staff+', desc: '10+ years, tech lead' },
+];
 
-export default function BenchmarkPage() {
-  const router = useRouter();
-  const [options, setOptions] = useState<Options>({ roles: [], locations: [], stages: [] });
-  const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({
+const STAGES = [
+  { id: 'Early', label: '🌱 Early Stage', desc: 'Seed - Series A, <$5M raised, <25 people' },
+  { id: 'Growth', label: '📈 Growth Stage', desc: 'Series A-B, $5M-$50M raised, 25-200 people' },
+  { id: 'Scale', label: '🚀 Scale Stage', desc: 'Series C+, $50M-$200M raised, 200-1000 people' },
+  { id: 'Late', label: '🏢 Late Stage', desc: '>$200M raised or unicorn, 1000+ people' },
+];
+
+const LOCATIONS = [
+  { id: 'San Francisco', label: '🌉 San Francisco', desc: 'Bay Area' },
+  { id: 'New York', label: '🗽 New York', desc: 'NYC metro' },
+  { id: 'Austin', label: '🤠 Austin', desc: 'Texas' },
+  { id: 'Remote', label: '🌍 Remote', desc: 'Anywhere' },
+];
+
+export default function BenchmarkWizard() {
+  const [step, setStep] = useState<Step>('role');
+  const [selections, setSelections] = useState({
     role: '',
     level: '',
-    location: '',
     stage: '',
-    email: '',
+    location: '',
   });
-  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | 'bulk'>('basic');
 
-  useEffect(() => {
-    fetchOptions();
-  }, []);
-
-  const fetchOptions = async () => {
-    try {
-      const response = await fetch('/api/options');
-      const data = await response.json();
-      setOptions(data);
-    } catch (error) {
-      console.error('Failed to fetch options:', error);
-      setOptions({
-        roles: ['Software Engineer', 'Senior Software Engineer', 'Product Manager'],
-        locations: ['San Francisco', 'New York', 'Seattle'],
-        stages: ['Seed', 'Series A', 'Series B']
-      });
-    } finally {
-      setLoading(false);
+  const handleSelect = (key: string, value: string) => {
+    setSelections(prev => ({ ...prev, [key]: value }));
+    
+    // Auto-advance to next step
+    const stepOrder: Step[] = ['role', 'level', 'stage', 'location', 'results'];
+    const currentIndex = stepOrder.indexOf(step);
+    if (currentIndex < stepOrder.length - 1) {
+      setTimeout(() => setStep(stepOrder[currentIndex + 1]), 300);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // For MVP: skip payment, go directly to results
-    const params = new URLSearchParams({
-      role: formData.role,
-      level: formData.level,
-      location: formData.location,
-      stage: formData.stage,
-    });
-    router.push(`/results?${params.toString()}`);
-  };
-
-  const isFormValid = formData.role && formData.level && formData.location && formData.stage && formData.email;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
+  const progress = {
+    role: 20,
+    level: 40,
+    stage: 60,
+    location: 80,
+    results: 100,
+  }[step];
 
   return (
-    <div className="min-h-screen bg-muted/50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">Get Your Compensation Benchmark</h1>
-            <p className="text-lg text-muted-foreground">
-              Comprehensive comp data with P25/P50/P75/P90 percentiles, Total Cash, and Equity breakdown
-            </p>
+        {/* Progress Bar */}
+        <div className="max-w-3xl mx-auto mb-12">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-medium text-gray-600">
+              Step {stepOrder.indexOf(step) + 1} of 4
+            </span>
+            <span className="text-sm font-medium text-indigo-600">{progress}% complete</span>
           </div>
-
-          {/* Pricing Selection */}
-          <div className="grid md:grid-cols-3 gap-4 mb-8">
-            <Card 
-              className={`cursor-pointer transition-all ${selectedPlan === 'basic' ? 'border-primary shadow-lg' : ''}`}
-              onClick={() => setSelectedPlan('basic')}
-            >
-              <CardHeader>
-                <CardTitle>Basic</CardTitle>
-                <CardDescription className="text-2xl font-bold">${PRICING.basic}</CardDescription>
-              </CardHeader>
-              <CardContent className="text-sm">
-                <ul className="space-y-1">
-                  <li>✓ Benchmark report</li>
-                  <li>✓ Offer letter PDF</li>
-                  <li>✓ All percentiles</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className={`cursor-pointer transition-all ${selectedPlan === 'premium' ? 'border-primary shadow-lg' : ''}`}
-              onClick={() => setSelectedPlan('premium')}
-            >
-              <CardHeader>
-                <CardTitle>Premium</CardTitle>
-                <CardDescription className="text-2xl font-bold">${PRICING.premium}</CardDescription>
-              </CardHeader>
-              <CardContent className="text-sm">
-                <ul className="space-y-1">
-                  <li>✓ Everything in Basic</li>
-                  <li>✓ Equity scenarios</li>
-                  <li>✓ Negotiation tips</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className={`cursor-pointer transition-all ${selectedPlan === 'bulk' ? 'border-primary shadow-lg' : ''}`}
-              onClick={() => setSelectedPlan('bulk')}
-            >
-              <CardHeader>
-                <CardTitle>Bulk (3-pack)</CardTitle>
-                <CardDescription className="text-2xl font-bold">${PRICING.bulk}</CardDescription>
-              </CardHeader>
-              <CardContent className="text-sm">
-                <ul className="space-y-1">
-                  <li>✓ 3 benchmark reports</li>
-                  <li>✓ Premium features</li>
-                  <li>✓ 30-day access</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Benchmark Details</CardTitle>
-              <CardDescription>Tell us about the role you're evaluating</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="role">Role / Job Title</Label>
-                  <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                    <SelectTrigger id="role">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {options.roles.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="level">Level / Seniority</Label>
-                  <Select value={formData.level} onValueChange={(value) => setFormData({ ...formData, level: value })}>
-                    <SelectTrigger id="level">
-                      <SelectValue placeholder="Select level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LEVELS.map((level) => (
-                        <SelectItem key={level} value={level}>
-                          {level}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Select value={formData.location} onValueChange={(value) => setFormData({ ...formData, location: value })}>
-                    <SelectTrigger id="location">
-                      <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {options.locations.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="stage">Company Stage</Label>
-                  <Select value={formData.stage} onValueChange={(value) => setFormData({ ...formData, stage: value })}>
-                    <SelectTrigger id="stage">
-                      <SelectValue placeholder="Select stage" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {options.stages.map((stage) => (
-                        <SelectItem key={stage} value={stage}>
-                          {stage}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    We'll send your comprehensive benchmark report to this email
-                  </p>
-                </div>
-
-                <div className="pt-4">
-                  <Button type="submit" size="lg" className="w-full" disabled={!isFormValid}>
-                    Get Benchmark Report - ${PRICING[selectedPlan]}
-                  </Button>
-                  <p className="text-xs text-center text-muted-foreground mt-2">
-                    MVP Preview Mode: Payment processing coming soon. View sample report now.
-                  </p>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              Not ready to pay? Try our{' '}
-              <a href="/calculator" className="text-primary hover:underline">
-                free compensation calculator
-              </a>
-            </p>
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </div>
+
+        {/* Question Cards */}
+        <div className="max-w-3xl mx-auto">
+          {step === 'role' && (
+            <div className="space-y-6">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold mb-3">What role are you hiring for?</h1>
+                <p className="text-xl text-gray-600">Select the position you want to benchmark</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {ROLES.map(role => (
+                  <button
+                    key={role.id}
+                    onClick={() => handleSelect('role', role.id)}
+                    className={`p-6 rounded-2xl border-2 text-left transition-all hover:shadow-lg hover:scale-105 ${
+                      selections.role === role.id
+                        ? 'border-indigo-600 bg-indigo-50'
+                        : 'border-gray-200 bg-white hover:border-indigo-300'
+                    }`}
+                  >
+                    <div className="text-2xl font-bold mb-2">{role.label}</div>
+                    <div className="text-sm text-gray-600">{role.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 'level' && (
+            <div className="space-y-6">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold mb-3">What's their experience level?</h1>
+                <p className="text-xl text-gray-600">Choose the seniority level</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {LEVELS.map(level => (
+                  <button
+                    key={level.id}
+                    onClick={() => handleSelect('level', level.id)}
+                    className={`p-6 rounded-2xl border-2 text-left transition-all hover:shadow-lg hover:scale-105 ${
+                      selections.level === level.id
+                        ? 'border-indigo-600 bg-indigo-50'
+                        : 'border-gray-200 bg-white hover:border-indigo-300'
+                    }`}
+                  >
+                    <div className="text-2xl font-bold mb-2">{level.label}</div>
+                    <div className="text-sm text-gray-600">{level.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 'stage' && (
+            <div className="space-y-6">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold mb-3">What's your company stage?</h1>
+                <p className="text-xl text-gray-600">Based on funding and team size</p>
+              </div>
+              <div className="grid gap-4">
+                {STAGES.map(stage => (
+                  <button
+                    key={stage.id}
+                    onClick={() => handleSelect('stage', stage.id)}
+                    className={`p-6 rounded-2xl border-2 text-left transition-all hover:shadow-lg hover:scale-105 ${
+                      selections.stage === stage.id
+                        ? 'border-indigo-600 bg-indigo-50'
+                        : 'border-gray-200 bg-white hover:border-indigo-300'
+                    }`}
+                  >
+                    <div className="text-2xl font-bold mb-2">{stage.label}</div>
+                    <div className="text-sm text-gray-600">{stage.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 'location' && (
+            <div className="space-y-6">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold mb-3">Where is the candidate located?</h1>
+                <p className="text-xl text-gray-600">Location affects compensation ranges</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {LOCATIONS.map(loc => (
+                  <button
+                    key={loc.id}
+                    onClick={() => handleSelect('location', loc.id)}
+                    className={`p-6 rounded-2xl border-2 text-left transition-all hover:shadow-lg hover:scale-105 ${
+                      selections.location === loc.id
+                        ? 'border-indigo-600 bg-indigo-50'
+                        : 'border-gray-200 bg-white hover:border-indigo-300'
+                    }`}
+                  >
+                    <div className="text-2xl font-bold mb-2">{loc.label}</div>
+                    <div className="text-sm text-gray-600">{loc.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 'results' && (
+            <div className="text-center">
+              <div className="animate-pulse mb-8">
+                <div className="text-6xl mb-4">📊</div>
+                <h2 className="text-3xl font-bold mb-3">Generating your benchmark report...</h2>
+                <p className="text-xl text-gray-600">Based on {selections.role} - {selections.level} at {selections.stage} stage in {selections.location}</p>
+              </div>
+              <div className="mt-12">
+                <Button 
+                  size="lg" 
+                  onClick={() => window.location.href = `/results?role=${selections.role}&level=${selections.level}&stage=${selections.stage}&location=${selections.location}`}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-lg px-10 py-6"
+                >
+                  View Your Report →
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Back Button */}
+        {step !== 'role' && step !== 'results' && (
+          <div className="max-w-3xl mx-auto mt-8">
+            <button
+              onClick={() => {
+                const stepOrder: Step[] = ['role', 'level', 'stage', 'location'];
+                const currentIndex = stepOrder.indexOf(step);
+                if (currentIndex > 0) setStep(stepOrder[currentIndex - 1]);
+              }}
+              className="text-gray-600 hover:text-gray-900 flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+const stepOrder: Step[] = ['role', 'level', 'stage', 'location', 'results'];
