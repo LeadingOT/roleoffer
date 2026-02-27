@@ -172,9 +172,11 @@ export default async function ResultsPage({
               Get detailed percentiles, offer letter template, equity calculator, and negotiation tips
             </p>
             <div className="flex gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-lg px-10 py-6">
-                Get Full Report ($49) →
-              </Button>
+              <Link href={`/checkout?role=${role}&level=${level}&stage=${stage}&location=${location}`}>
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-lg px-10 py-6">
+                  Get Full Report ($49) →
+                </Button>
+              </Link>
               <Link href="/benchmark">
                 <Button size="lg" variant="outline" className="text-lg px-10 py-6">
                   Try Another Role
