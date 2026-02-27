@@ -1,6 +1,6 @@
 import { getBenchmark } from '@/lib/benchmarks';
 import { Button } from '@/components/ui/button';
-import Link from 'link';
+import Link from 'next/link';
 
 export default async function CheckoutPage({
   searchParams,

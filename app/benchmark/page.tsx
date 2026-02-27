@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 // Wizard steps
-type Step = 'role' | 'level' | 'stage' | 'size' | 'location' | 'results';
+type Step = 'role' | 'level' | 'stage' | 'location' | 'results';
 
 const ROLES = [
   { id: 'Software Engineer', label: '👨‍💻 Software Engineer', desc: 'Backend, Frontend, Full-stack' },

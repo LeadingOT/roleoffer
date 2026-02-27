@@ -111,11 +111,7 @@ export default async function ReportPage({
           <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-200">
             <h2 className="text-3xl font-bold mb-6">💰 Base Salary Benchmarks</h2>
             
-            <div className="grid md:grid-cols-5 gap-4 mb-6">
-              <div className="text-center">
-                <div className="text-sm text-gray-600 mb-2">P10</div>
-                <div className="text-2xl font-bold text-gray-600">${(benchmark.p10_base/1000).toFixed(0)}K</div>
-              </div>
+            <div className="grid md:grid-cols-4 gap-4 mb-6">
               <div className="text-center">
                 <div className="text-sm text-gray-600 mb-2">P25</div>
                 <div className="text-2xl font-bold text-gray-700">${baseP25}K</div>
