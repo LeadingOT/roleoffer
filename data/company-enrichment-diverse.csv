@@ -39,3 +39,39 @@ Dub,Seed,3.3,5-10,20,2024-01,Crunchbase,Early
 v0,Seed,1.2,3-8,12,2023-12,Crunchbase,Early
 Cursor,Series A,8,10-25,60,2024-01,Crunchbase,Early
 Zed,Seed,5,8-20,40,2023-08,Crunchbase,Early
+Upstash,Seed,1.9,5-15,16,2023-06,Crunchbase,Early
+Neon,Series B,46,50-100,320,2023-02,Crunchbase,Growth
+Railway,Series A,20,15-40,150,2022-08,Crunchbase,Early
+Fly.io,Series B,61,50-120,480,2023-03,Crunchbase,Growth
+Val Town,Seed,5.5,5-12,35,2023-10,Crunchbase,Early
+Pieces,Series A,16,25-50,110,2023-09,Crunchbase,Growth
+Basedash,Seed,2.1,3-8,18,2022-11,Crunchbase,Early
+Airplane,Series A,14,20-40,95,2022-12,Crunchbase,Early
+Temporal,Series B,103,100-200,850,2022-02,Crunchbase,Growth
+Inngest,Seed,3,5-12,22,2023-05,Crunchbase,Early
+WorkOS,Series B,40,40-80,280,2023-01,Crunchbase,Growth
+Clerk,Series B,29,30-60,185,2023-03,Crunchbase,Growth
+Propel,Series A,8.5,10-25,48,2023-07,Crunchbase,Early
+Fern,Seed,3.2,4-10,20,2023-11,Crunchbase,Early
+Highlight,Seed,4,6-15,28,2023-04,Crunchbase,Early
+Plain,Seed,6,8-18,35,2023-09,Crunchbase,Early
+Superhuman,Series C,108,150-300,820,2023-08,Crunchbase,Growth
+Height,Series A,11.5,15-35,68,2023-05,Crunchbase,Early
+Rows,Series B,16,20-50,110,2022-06,Crunchbase,Growth
+Coda,Series D,140,200-400,1100,2021-04,Crunchbase,Scale
+Equals,Seed,5,6-15,32,2023-02,Crunchbase,Early
+Jam,Series A,18,25-50,125,2023-10,Crunchbase,Growth
+Tuple,Seed,1,3-8,12,2022-03,Crunchbase,Early
+Around,Series A,11,15-30,72,2021-08,Crunchbase,Early
+Campsite,Seed,2.5,4-10,18,2023-06,Crunchbase,Early
+Loom,Acquired,203,300-600,1500,2021-05,Crunchbase,Scale
+Grain,Series A,14,18-40,85,2022-09,Crunchbase,Early
+tldraw,Seed,2.7,3-8,20,2023-12,Crunchbase,Early
+Webflow,Series C,215,400-800,1800,2022-10,Crunchbase,Scale
+LaunchDarkly,Series D,200,300-600,1300,2021-08,Crunchbase,Scale
+Sourcegraph,Series D,225,200-500,2600,2021-07,Crunchbase,Scale
+Hasura,Series C,100,100-250,850,2022-02,Crunchbase,Scale
+Postman,Series D,433,500-1000,5600,2021-08,Crunchbase,Scale
+Grafana Labs,Series D,240,600-1200,3000,2022-04,Crunchbase,Scale
+Snyk,Series F,530,800-1500,7400,2022-03,Crunchbase,Late
+HashiCorp,Public,350,3000+,5100,2020-03,Crunchbase,Late

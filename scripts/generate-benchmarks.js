@@ -6,7 +6,7 @@ const fs = require('fs');
 const STAGE_MULTIPLIERS = {
   Early: {
     base: 0.85,      // Early stage pays 15% less base
-    equity: 2.5,     // But 2.5x more equity
+    equity: 3.0,     // But 3x more equity (adjusted from 2.5x)
     totalCash: 0.90
   },
   Growth: {
@@ -58,7 +58,7 @@ const BASE_COMP = {
 const LOCATION_MULTIPLIERS = {
   'San Francisco': 1.0,
   'New York': 0.95,
-  'Austin': 0.80,
+  'Austin': 0.75,      // Adjusted from 0.80
   'Remote': 0.85
 };
 
@@ -75,12 +75,12 @@ function generateBenchmark(role, level, stage, location) {
     p25_base: Math.round(baseComp.base * stageMulti.base * locMulti * 0.90 * 1000),
     p50_base: Math.round(baseComp.base * stageMulti.base * locMulti * 1000),
     p75_base: Math.round(baseComp.base * stageMulti.base * locMulti * 1.10 * 1000),
-    p90_base: Math.round(baseComp.base * stageMulti.base * locMulti * 1.20 * 1000),
+    p90_base: Math.round(baseComp.base * stageMulti.base * locMulti * 1.25 * 1000),  // Increased from 1.20
     
     p25_total_cash: Math.round(baseComp.totalCash * stageMulti.totalCash * locMulti * 0.90 * 1000),
     p50_total_cash: Math.round(baseComp.totalCash * stageMulti.totalCash * locMulti * 1000),
     p75_total_cash: Math.round(baseComp.totalCash * stageMulti.totalCash * locMulti * 1.10 * 1000),
-    p90_total_cash: Math.round(baseComp.totalCash * stageMulti.totalCash * locMulti * 1.20 * 1000),
+    p90_total_cash: Math.round(baseComp.totalCash * stageMulti.totalCash * locMulti * 1.25 * 1000),  // Increased from 1.20
     
     p25_equity_pct: baseComp.equity * stageMulti.equity * 0.70,
     p50_equity_pct: baseComp.equity * stageMulti.equity,
