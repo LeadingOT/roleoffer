@@ -35,6 +35,15 @@ export default function RootLayout({
           gtag('config', 'G-6FX4G3V8JD');
         `}
       </Script>
+      <Script id="microsoft-clarity" strategy="afterInteractive">
+        {`
+          (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+          })(window, document, "clarity", "script", "vp364sjc57");
+        `}
+      </Script>
       <body className={inter.className}>
         <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
           <div className="container mx-auto px-4 py-4">
